@@ -163,8 +163,8 @@ This template only produces the **BIN**; choose either method above based on you
 ## Prebuilt Binaries
 Ready‑to‑flash `.bin` files built for common settings. Files are versioned under `artifacts/<version>/`.
 
-**v0.1.1**  
-`artifacts/v0.1.1/`
+**v0.1.2**  
+`artifacts/v0.1.2/`
 - [T5L51_9600_CrcOff_ResponseOff_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOff_ResponseOff_noRTC.bin)
 - [T5L51_9600_CrcOff_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOff_ResponseOn_noRTC.bin)
 - [T5L51_9600_CrcOn_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOn_ResponseOn_noRTC.bin)
