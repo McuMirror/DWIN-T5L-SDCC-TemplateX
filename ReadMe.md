@@ -165,12 +165,12 @@ Ready‑to‑flash `.bin` files built for common settings. Files are versioned u
 
 **v0.1.1**  
 `artifacts/v0.1.1/`
-- [T5L51_9600_CrcOff_ResponseOff_noRTC.bin](./artifacts/v0.1.1/T5L51_9600_CrcOff_ResponseOff_noRTC.bin)
-- [T5L51_9600_CrcOff_ResponseOn_noRTC.bin](./artifacts/v0.1.1/T5L51_9600_CrcOff_ResponseOn_noRTC.bin)
-- [T5L51_9600_CrcOn_ResponseOn_noRTC.bin](./artifacts/v0.1.1/T5L51_9600_CrcOn_ResponseOn_noRTC.bin)
-- [T5L51_115200_CrcOff_ResponseOff_noRTC.bin](./artifacts/v0.1.1/T5L51_115200_CrcOff_ResponseOff_noRTC.bin)
-- [T5L51_115200_CrcOff_ResponseOn_noRTC.bin](./artifacts/v0.1.1/T5L51_115200_CrcOff_ResponseOn_noRTC.bin)
-- [T5L51_115200_CrcON_ResponseOn_noRTC.bin](./artifacts/v0.1.1/T5L51_115200_CrcON_ResponseOn_noRTC.bin)
+- [T5L51_9600_CrcOff_ResponseOff_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOff_ResponseOff_noRTC.bin)
+- [T5L51_9600_CrcOff_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOff_ResponseOn_noRTC.bin)
+- [T5L51_9600_CrcOn_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_9600_CrcOn_ResponseOn_noRTC.bin)
+- [T5L51_115200_CrcOff_ResponseOff_noRTC.bin](./artifacts/v0.1.2/T5L51_115200_CrcOff_ResponseOff_noRTC.bin)
+- [T5L51_115200_CrcOff_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_115200_CrcOff_ResponseOn_noRTC.bin)
+- [T5L51_115200_CrcON_ResponseOn_noRTC.bin](./artifacts/v0.1.2/T5L51_115200_CrcON_ResponseOn_noRTC.bin)
 
 > **⚠️ Important:** After flashing, the panel will immediately operate with those settings and they persist across reboots. Ensure your MCU/host UART is set to the **same baud/CRC/response** before testing. If you lose communication, re‑flash a known variant (e.g., 9600/CRC‑Off/Response‑Off) or temporarily switch your host to the flashed settings.
 

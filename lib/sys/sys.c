@@ -92,36 +92,10 @@ u16 DGUS_Read_VP(u16 addr)
  */
 void DGUS_Write_VP(u16 addr, u16 val)
 {
-    u16 word_addr = addr >> 1;
-    // Set address
-    ADR_H = 0x00;
-    ADR_M = (u8)(word_addr >> 8);
-    ADR_L = (u8)(word_addr);
-
-    /* Some revisions require an initial read cycle for reliability */
-    RAMMODE = 0xAF; // READ
-    dgus_wait_ack_high();
-    dgus_kick_and_wait_done();
-
-    // Parity check for correct write mode and lanes
-    if (addr & 0x01)
-    {
-        RAMMODE = 0x83; // DATA1 + DATA0 (odd word)
-        dgus_wait_ack_high();
-        DATA1 = (u8)(val >> 8);
-        DATA0 = (u8)(val & 0xFF);
-        dgus_kick_and_wait_done();
-    }
-    else
-    {
-        RAMMODE = 0x8C; // DATA3 + DATA2 (even word)
-        dgus_wait_ack_high();
-        DATA3 = (u8)(val >> 8);
-        DATA2 = (u8)(val & 0xFF);
-        dgus_kick_and_wait_done();
-    }
-
-    RAMMODE = 0x00; // idle
+    u8 tmp[2];
+    tmp[0] = (u8)(val >> 8);   // MSB
+    tmp[1] = (u8)(val & 0xFF); // LSB
+    DGUS_WriteBytes(addr, tmp, 2);
 }
 
 /**
@@ -133,35 +107,90 @@ void DGUS_Write_VP(u16 addr, u16 val)
  */
 void DGUS_WriteBytes(u16 addr, const u8 *buf, u16 len)
 {
-    u16 idx = 0;
+    u8 align = (u8)(addr & 0x01); // check if addr is odd or even
+    u16 word_addr = addr >> 1;
 
-    // full words
-    while ((len - idx) >= 2)
-    {
-        u16 w = ((u16)buf[idx] << 8) | (u16)buf[idx + 1]; // MSB, LSB
-        DGUS_Write_VP((u16)(addr + (idx >> 1)), w);       // addr + word_index
-        idx += 2;
-    }
+    if (len == 0)
+        return;
 
-    // tail 1 byte?
-    if ((len - idx) == 1)
+    // Set starting address
+    ADR_H = 0x00;
+    ADR_M = (u8)(word_addr >> 8);
+    ADR_L = (u8)(word_addr);
+
+    // Auto increment
+    ADR_INC = 0x01;
+
+    // Enter global write mode (old code: RAMMODE = 0x8F)
+    RAMMODE = 0x8F;
+    dgus_wait_ack_high();
+
+    // 1) ALIGNMENT CORRECTION AT START (if addr is odd)
+    if (align && len > 0)
     {
-        u16 word_vp = (u16)(addr + (idx >> 1)); // target word VP
-        u16 old = DGUS_Read_VP(word_vp);
-        if (((addr + idx) & 0x01) == 0)
+        if (len == 1)
         {
-            // last byte lands at even VP → MSB of word
-            u16 v = ((u16)buf[idx] << 8) | (old & 0x00FF);
-            DGUS_Write_VP(word_vp, v);
+            // 1 byte, upper half word
+            RAMMODE = 0x82; // old: single byte / DATA1
+            dgus_wait_ack_high();
+            DATA1 = *buf++;
+            dgus_kick_and_wait_done();
+            len -= 1;
         }
         else
         {
-            // last byte lands at odd VP  → LSB of word
-            u16 v = (old & 0xFF00) | (u16)buf[idx];
-            DGUS_Write_VP(word_vp, v);
+            // 2 bytes, upper+lower
+            RAMMODE = 0x83; // old: DATA1+DATA0
+            dgus_wait_ack_high();
+            DATA1 = *buf++;
+            DATA0 = *buf++;
+            dgus_kick_and_wait_done();
+            len -= 2;
         }
+
+        // Return to full write mode for subsequent blocks
+        RAMMODE = 0x8F;
+        dgus_wait_ack_high();
     }
-    delay_ms(20);
+
+    // 2) MIDDLE SECTION: 4-BYTE BLOCKS
+    while (len >= 4)
+    {
+        DATA3 = *buf++;
+        DATA2 = *buf++;
+        DATA1 = *buf++;
+        DATA0 = *buf++;
+        dgus_kick_and_wait_done();
+        len -= 4;
+    }
+
+    // 3) TAIL: 3 / 2 / 1 BYTE
+    if (len == 3)
+    {
+        RAMMODE = 0x8E; // 3 bytes: D3,D2,D1
+        dgus_wait_ack_high();
+        DATA3 = *buf++;
+        DATA2 = *buf++;
+        DATA1 = *buf++;
+        dgus_kick_and_wait_done();
+    }
+    else if (len == 2)
+    {
+        RAMMODE = 0x8C; // 2 bytes: D3,D2
+        dgus_wait_ack_high();
+        DATA3 = *buf++;
+        DATA2 = *buf++;
+        dgus_kick_and_wait_done();
+    }
+    else if (len == 1)
+    {
+        RAMMODE = 0x88; // 1 byte: D3
+        dgus_wait_ack_high();
+        DATA3 = *buf++;
+        dgus_kick_and_wait_done();
+    }
+
+    RAMMODE = 0x00; // idle
 }
 
 /**

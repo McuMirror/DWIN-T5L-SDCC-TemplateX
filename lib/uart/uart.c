@@ -188,15 +188,12 @@ void uart4_TISR(void) __interrupt(10)
 void uart5_RISR(void) __interrupt(13)
 {
 #if UART5_ENABLE
-    if (RI5) // receive flag
-    {
-        R_u5[R_CN5] = SBUF5_RX;
-        SCON5R &= 0xFE;                 // clear receive flag
-        R_OD5 = 1;                      // receive data flag
-        if (R_CN5 < UART5_RX_LENTH - 1) // prevent overflow
-            R_CN5++;                    // increase receive count
-        T_O5 = 5;                       // set receive timeout
-    }
+    R_u5[R_CN5] = SBUF5_RX;
+    SCON5R &= 0xFE;                 // clear receive flag
+    R_OD5 = 1;                      // receive data flag
+    if (R_CN5 < UART5_RX_LENTH - 1) // prevent overflow
+        R_CN5++;                    // increase receive count
+    T_O5 = 5;                       // set receive timeout
 #endif
 }
 // UART5 transmit ISR
@@ -364,10 +361,7 @@ void DGUS_MonitorAndSendUpdates(void)
         // [5A A5 | LEN | 0x83 | AddrH | AddrL | Words | Data(2*Words) | (CRC Lo | CRC Hi if CRC ON)]
         packet[0] = 0x5A;
         packet[1] = 0xA5;
-        {
-            u8 words = (u8)var_length;                // var_length low-byte = number of words
-            packet[2] = (u8)(2u * words + 4u);        // LEN (without CRC) = 4 + 2*Words
-        }
+        packet[2] = (((u8)var_length) << 1) + 4; // Length of payload
         packet[3] = 0x83;
         packet[4] = (u8)change_flag;       // AddrH (0x0F00 high-byte==0x5A, low-byte carries AddrH)
         packet[5] = (u8)(var_length >> 8); // AddrL (0x0F01 high-byte)
@@ -389,8 +383,8 @@ void DGUS_MonitorAndSendUpdates(void)
         packet[2] = (u8)(packet[2] + 2u);
         {
             u16 crc = crc16table(packet + 3, (u16)(packet[2] - 2u));
-            packet[3 + (u16)packet[2] - 2u] = (u8)(crc & 0xFF);  // CRC LOW
-            packet[3 + (u16)packet[2] - 1u] = (u8)(crc >> 8);    // CRC HIGH
+            packet[3 + (u16)packet[2] - 2u] = (u8)(crc & 0xFF); // CRC LOW
+            packet[3 + (u16)packet[2] - 1u] = (u8)(crc >> 8);   // CRC HIGH
         }
 #endif
 
@@ -492,6 +486,13 @@ void DGUS_HandleCmd82(u8 uart, u8 *frame)
  * @param uart     UART channel number (e.g., 2, 3, 4, 5)
  * @param response Buffer to build the response frame
  * @param request  Pointer to received request frame
+ */
+/**
+ * @brief Handle DGUS "0x83" (read) command.
+ * Frame (no CRC):  [5A A5 | LEN | 83 | ADDR_H | ADDR_L | WORDS]
+ * Response (no CRC): [5A A5 | (2*WORDS+4) | 83 | ADDR_H | ADDR_L | WORDS | DATA...]
+ * CRC'li çerçevede, CRC iki byte olarak sondadır (LOW, HIGH) ve
+ * CRC hesabı [CMD..payload] (LEN-2 byte) üzerinde yapılır.
  */
 void DGUS_HandleCmd83(u8 uart, u8 *response, const u8 *request)
 {
@@ -613,8 +614,7 @@ void DGUS_ParseUartFrame(u8 *Arr, u16 *Len, u8 uart, __bit resp, __bit crc_on)
  */
 void DGUS_ProcessAllUarts(void)
 {
-    if (g_in_download_mode)
-        return;
+
 #if UART2_ENABLE
     if ((R_OD2) && (!T_O2))
     {

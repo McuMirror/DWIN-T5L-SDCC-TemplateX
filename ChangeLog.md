@@ -2,9 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format follows **Keep a Changelog**, and the versioning scheme is based on **SemVer**.
 
-## [Unreleased]
+## [0.1.2] - 2025-10-22
 
-—
+### Fixed
+- UART3 error resolved by disabling UART3 definitions in the configuration file (UART3 is not used in DWIN modules).
+
+### Improved
+- Enhanced register write functions.
+
 
 ## [0.1.1] - 2025-10-21
 
@@ -12,6 +17,7 @@ All notable changes to this project will be documented in this file. The format 
 - Incorrect LEN byte and CRC handling for `0x83` frames (previously `5A A5 06 83 10 08 01 00 02 28 45` was produced, now corrected to `5A A5 08 83 10 08 01 00 01 4C 4B`).
 - Resolved double-CRC issue and aligned output with the official DGUS communication standard.
 - Fixed packet structure which is still incorrect in DWIN’s original template.
+
 
 ### Notes
 - CRC-OFF behavior is unchanged.
