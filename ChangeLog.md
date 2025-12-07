@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. The format follows **Keep a Changelog**, and the versioning scheme is based on **SemVer**.
 
-## [0.1.2] - 2025-10-22
+## [0.1.2] - 2025-12-07
 
 ### Fixed
 - UART3 error resolved by disabling UART3 definitions in the configuration file (UART3 is not used in DWIN modules).

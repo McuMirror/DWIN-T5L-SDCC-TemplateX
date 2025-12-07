@@ -199,13 +199,23 @@ If DATA+IDATA exceeds 256 bytes or CODE > 64KB, the Makefile emits warnings.
 
 ## Changelog
 
-**1.0.0**  
+### [1.0.0] - 2025-01-XX
 Initial stable release. The entire codebase has been verified to compile cleanly and run reliably on multiple T5L/T5L51 devices using SDCC 4.5.0+. All core libraries (UART, SYS, CRC, TIMER, RTC) have been tested and validated under the large memory model configuration.
 
 - Fully working startup and interrupt routines
 - Verified UART communication and CRC integrity
 - Stable and maintainable Makefile with automatic SDCC path detection
 - Memory summary verified against linker output for accuracy
+
+### [0.1.1] - 2025-10-21
+- Incorrect LEN byte and CRC handling for `0x83` frames (previously `5A A5 06 83 10 08 01 00 02 28 45` was produced, now corrected to `5A A5 08 83 10 08 01 00 01 4C 4B`).
+- Resolved double-CRC issue and aligned output with the official DGUS communication standard.
+- Fixed packet structure which is still incorrect in DWIN's original template.
+
+### [0.1.2] - 2025-12-07
+- UART3 error resolved by disabling UART3 definitions in the configuration file (UART3 is not used in DWIN modules).
+- Enhanced register write functions.
+
 
 ---
 
